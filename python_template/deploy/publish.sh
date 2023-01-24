@@ -54,6 +54,7 @@ if [[ ! -z $1 && $1 -eq 1 ]]; then
 	lambdaSecurityGroups=$(cat $config | jq '.lambdaSecurityGroups' | tr -d '"')
 	lambdaEnvironment=$(cat $config | jq '.lambdaEnvironment' | tr -d '"')
 	lambdaRuntime=$(cat $config | jq '.lambdaRuntime' | tr -d '"')
+	lambdaArchitectures=$(cat $config | jq '.lambdaArchitectures' | tr -d '"')
 
 	# Destroy and prepare build folder.
 	rm -rf ${function}_aws_build
@@ -67,7 +68,7 @@ if [[ ! -z $1 && $1 -eq 1 ]]; then
 	cd ./${function}_aws_build
 	mv $handlerFile handler.py
 	zip -X -r ./index.zip *
-	aws lambda create-function --function-name $function --runtime $lambdaRuntime --role $lambdaRole --timeout 900 --handler $lambdaHandler --zip-file fileb://index.zip
+	aws lambda create-function --function-name $function --runtime $lambdaRuntime --architectures $lambdaArchitectures --role $lambdaRole --timeout 900 --handler $lambdaHandler --zip-file fileb://index.zip
 	aws lambda update-function-code --function-name $function --zip-file fileb://index.zip
 	aws lambda update-function-configuration --function-name $function --memory-size $memory --runtime $lambdaRuntime \
 		--vpc-config SubnetIds=[$lambdaSubnets],SecurityGroupIds=[$lambdaSecurityGroups] --environment "$lambdaEnvironment"
